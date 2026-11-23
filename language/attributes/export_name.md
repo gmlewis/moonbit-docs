@@ -1,0 +1,39 @@
+# Export Name Attribute
+
+The `#export_name` attribute assigns a stable exported symbol name to a public
+function in a package declared with `pkgtype(kind: "foreign_library")`. The
+name is used in generated Wasm, JavaScript, or C output:
+
+```moonbit
+#export_name("add")
+pub fn add_one(value : Int32) -> Int32 {
+  value + 1
+}
+```
+
+Export names must be unique within the package. Name restrictions depend on
+the backend: native requires valid C symbol identifiers, while WebAssembly
+export names are UTF-8 strings and are not limited to C identifiers.
+
+The attribute cannot be used on generic functions, functions with optional
+arguments, methods, or declarations without a body.
+
+Prefer `#export_name` over backend-specific `exports` link configuration for
+new exports. It keeps the exported name next to the function and applies to
+every backend that supports foreign-library output. Use `exports` when the
+export set or names must differ by backend, or when the source cannot be
+annotated.
+
+Export declarations are scoped to the package that produces the artifact. An
+attribute in a dependency applies when that dependency is built as its own
+artifact, but it does not add a symbol to a downstream package's artifact. To
+expose dependency functionality, define and export a wrapper in the exporting
+package.
+
+#### NOTE
+The native backend produces a static archive (`.a`, or `.lib` on Windows),
+not a shared library such as a `.dll` or `.so`. The host must call
+`moonbit_init()` before calling exported functions.
+
+See [Export Functions](https://docs.moonbitlang.com/en/latest/language/ffi.html#export-functions) for backend-specific
+alternatives.
